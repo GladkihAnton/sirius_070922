@@ -30,4 +30,7 @@ async def main():
 
 
 if __name__ == '__main__':
+    print("ypa ypa ypa ypa")
     asyncio.run(main())
+    # while True:
+    #     time.sleep(10)
