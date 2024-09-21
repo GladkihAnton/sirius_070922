@@ -21,6 +21,8 @@ pyjwt = "^2.9.0"
 greenlet = "^3.0.3"
 uvloop = "^0.20.0"
 aiogram = "^3.13.0"
+redis = "^5.0.8"
+hiredis = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "1.4"
