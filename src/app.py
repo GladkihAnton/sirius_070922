@@ -5,6 +5,8 @@ import uvicorn
 from aiogram import Dispatcher, Bot
 from aiogram.fsm.storage.redis import RedisStorage
 from fastapi import FastAPI
+from starlette_context import plugins
+from starlette_context.middleware import RawContextMiddleware
 
 from config.settings import settings
 from src.api.v1.router import router as v1_router
@@ -40,6 +42,7 @@ def create_app() -> FastAPI:
     app.include_router(v1_router, prefix='/v1', tags=['v1'])
     app.include_router(tg_router, prefix='/tg', tags=['tg'])
 
+    app.add_middleware(RawContextMiddleware, plugins=[plugins.CorrelationIdPlugin()])
     return app
 
 

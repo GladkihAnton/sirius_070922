@@ -1,0 +1,24 @@
+version: 1
+disable_existing_loggers: no
+formatters:
+  console_formatter:
+    (): consumer.logger.ConsoleFormatter
+handlers:
+  console_handler:
+    class: logging.StreamHandler
+    formatter: console_formatter
+root:
+  level: INFO
+  handlers: [console_handler]
+loggers:
+  'backend_logger':
+    level: INFO
+    propagate: yes
+    handlers: [console_handler]
+  'consumer_logger':
+    level: INFO
+    propagate: yes
+    handlers: [console_handler]
+  'uvicorn':
+    level: INFO
+    propagate: yes
