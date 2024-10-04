@@ -12,6 +12,7 @@ from starlette_context.header_keys import HeaderKeys
 from .router import router
 from src.storage.db import get_db
 from src.storage.rabbit import channel_pool
+from src.logger import logger
 
 from starlette_context import context
 
@@ -39,7 +40,7 @@ queue_name1 = 'test_queue1'
 async def publish(body: dict[str, any]) -> None:
     async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
         exchange = await channel.declare_exchange("first_exchange", ExchangeType.FANOUT, durable=True) # !
-
+        logger.info('Publishing message...')
         queue = await channel.declare_queue(queue_name, durable=True)
         queue1 = await channel.declare_queue(queue_name1, durable=True)
 

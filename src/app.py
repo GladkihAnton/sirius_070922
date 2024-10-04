@@ -16,11 +16,14 @@ from src.bot import setup_bot, setup_dp
 from src.handlers.callback.router import router as callback_router
 from src.handlers.command.router import router as command_router
 from src.handlers.message.router import router as message_router
+from src.logger import LOGGING_CONFIG, logger
 from src.storage.redis import setup_redis
 
 
 async def lifespan(app: FastAPI) -> None:
-    logging.getLogger("uvicorn").info('Starting lifespan')
+    logging.config.dictConfig(LOGGING_CONFIG)
+
+    logger.info('Starting lifespan')
 
     dp = Dispatcher()
     setup_dp(dp)
@@ -34,7 +37,7 @@ async def lifespan(app: FastAPI) -> None:
     while background_tasks:
         await asyncio.sleep(0)
 
-    logging.getLogger("uvicorn").info('Ending lifespan')
+    logger.info('Ending lifespan')
 
 
 def create_app() -> FastAPI:
