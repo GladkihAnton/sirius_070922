@@ -3,7 +3,9 @@ import logging.config
 import aio_pika
 import msgpack
 
+from consumer.handlers.gift import handle_gift
 from consumer.logger import LOGGING_CONFIG, logger, correlation_id_ctx
+from consumer.schema.gift import GiftMessage
 from consumer.storage.rabbit import channel_pool
 
 
@@ -27,4 +29,6 @@ async def main() -> None:
                     correlation_id_ctx.set(message.correlation_id)
                     logger.info("Message ...")
 
-                    print(msgpack.unpackb(message.body))
+                    body: GiftMessage = msgpack.unpackb(message.body)
+                    if body['event'] == 'gift':
+                        await handle_gift(body)

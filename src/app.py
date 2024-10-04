@@ -50,7 +50,9 @@ def create_app() -> FastAPI:
 
 
 async def start_polling():
-    logging.error('Starting polling')
+    logging.config.dictConfig(LOGGING_CONFIG)
+
+    logger.info('Starting polling')
     redis = setup_redis()
     storage = RedisStorage(redis=redis)
 
