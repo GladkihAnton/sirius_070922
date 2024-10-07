@@ -19,8 +19,8 @@ async def handle_gift(message: GiftMessage):
             # gifts = (await db.scalars(select(Gift).order_by(func.random()))).all()
 
             not_fetched = await db.execute(select(Gift).order_by(func.random()))
-            tuple_rows = await not_fetched.all()
-            gifts = tuple_rows,
+            tuple_rows = not_fetched.all()
+            gifts = [row for row, in tuple_rows]
 
             async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
                 exchange = await channel.declare_exchange("user_gifts", ExchangeType.TOPIC, durable=True)

@@ -5,7 +5,7 @@ from src.model.meta import Base
 
 
 class Gift(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'gift'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 

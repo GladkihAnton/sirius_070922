@@ -39,14 +39,15 @@ queue_name1 = 'test_queue1'
 
 async def publish(body: dict[str, any]) -> None:
     async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
-        exchange = await channel.declare_exchange("first_exchange", ExchangeType.FANOUT, durable=True) # !
+        exchange = await channel.declare_exchange("first_exchange", ExchangeType.TOPIC, durable=True) # !
         logger.info('Publishing message...')
+
         queue = await channel.declare_queue(queue_name, durable=True)
         queue1 = await channel.declare_queue(queue_name1, durable=True)
 
         # Binding queue
-        await queue.bind(exchange, '')
-        await queue1.bind(exchange, '')
+        await queue.bind(exchange, 'user_id.1')
+        await queue1.bind(exchange, 'user_id.2')
 
         await exchange.publish(
             aio_pika.Message(msgpack.packb(body), correlation_id=context.get(HeaderKeys.correlation_id)),

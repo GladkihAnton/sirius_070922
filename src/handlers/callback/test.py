@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery
 from aio_pika import Queue
 
 from config.settings import settings
-from consumer.storage.rabbit import channel_pool
+from src.storage.rabbit import channel_pool
 from .router import router
 
 
