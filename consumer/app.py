@@ -3,7 +3,7 @@ import logging.config
 import aio_pika
 import msgpack
 
-from consumer.handlers.gift import handle_gift
+from consumer.handlers.gift import handle_event_gift
 from consumer.logger import LOGGING_CONFIG, logger, correlation_id_ctx
 from consumer.schema.gift import GiftMessage
 from consumer.storage.rabbit import channel_pool
@@ -24,10 +24,23 @@ async def main() -> None:
 
         async with queue.iterator() as queue_iter:
             async for message in queue_iter: # type: aio_pika.Message
-                async with message.process():
+                async with message.process():  # после выхода из with будет ack (есть еще no_ack)
                     correlation_id_ctx.set(message.correlation_id)
                     logger.info("Message ...")
 
                     body: GiftMessage = msgpack.unpackb(message.body)
                     if body['event'] == 'gift':
-                        await handle_gift(body)
+                        await handle_event_gift(body)
+
+
+# Возможно более понятный код вида консмура
+# queue: Queue
+# while True:
+#     message = await queue.get()
+#     async with message.process():  # после выхода из with будет ack (есть еще no_ack)
+#         correlation_id_ctx.set(message.correlation_id)
+#         logger.info("Message ...")
+#
+#         body: GiftMessage = msgpack.unpackb(message.body)
+#         if body['event'] == 'gift':
+#             await handle_event_gift(body)

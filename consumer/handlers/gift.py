@@ -13,7 +13,7 @@ from consumer.storage.db import async_session
 from consumer.storage.rabbit import channel_pool
 
 
-async def handle_gift(message: GiftMessage):
+async def handle_event_gift(message: GiftMessage):
     if message['action'] == 'get_gifts':
         async with async_session() as db:
             # gifts = (await db.scalars(select(Gift).order_by(func.random()))).all()

@@ -32,8 +32,8 @@ async def lifespan(app: FastAPI) -> None:
 
     temp = await bot.get_webhook_info()
     await bot.set_webhook(settings.BOT_WEBHOOK_URL)
+    logger.info('Finished start')
     yield
-
     while background_tasks:
         await asyncio.sleep(0)
 
