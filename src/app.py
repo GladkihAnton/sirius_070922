@@ -3,6 +3,8 @@ import logging
 import uvicorn
 
 from aiogram import Dispatcher, Bot
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
 from fastapi import FastAPI
 from starlette_context import plugins
@@ -59,7 +61,8 @@ async def start_polling():
     dp = Dispatcher(storage=storage)
 
     setup_dp(dp)
-    bot = Bot(token=settings.BOT_TOKEN)
+    default = DefaultBotProperties(parse_mode=ParseMode.HTML)
+    bot = Bot(token=settings.BOT_TOKEN, default=default)
     setup_bot(bot)
 
     dp.include_router(command_router)

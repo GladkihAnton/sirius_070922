@@ -8,6 +8,7 @@ from src.model import meta
 from src.storage.db import engine
 
 
+# NOTE: Не использовать для прода. Нужно использовать alembic
 async def migrate():
     try:
         async with engine.begin() as conn:

@@ -1,3 +1,9 @@
+# Migrate
+
+Alembic для миграций
+PYTHONPATH=. python3 scripts/migrate.py
+
+
 # Вопросы:
 
 - Fast api

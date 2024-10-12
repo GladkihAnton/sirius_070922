@@ -39,7 +39,7 @@ queue_name1 = 'test_queue1'
 
 async def publish(body: dict[str, any]) -> None:
     async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
-        exchange = await channel.declare_exchange("first_exchange", ExchangeType.TOPIC, durable=True) # !
+        exchange = await channel.declare_exchange("first_exchange", ExchangeType.TOPIC, durable=True)  # !
         logger.info('Publishing message...')
 
         queue = await channel.declare_queue(queue_name, durable=True)

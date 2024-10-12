@@ -19,14 +19,14 @@ def create_engine() -> AsyncEngine:
         poolclass=AsyncAdaptedQueuePool,
         connect_args={
             'connection_class': CConnection,
-            # 'pool_recycle': 3600,
-            # 'pool_size': 5,
-            # 'pool_overflow': 10,
         },
+        # 'pool_recycle': 3600,
+        # 'pool_size': 10,
+        # 'max_overflow': 30,
     )
 
 
-def create_session(_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+def create_session_maker(_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(
         bind=_engine,
         class_=AsyncSession,
@@ -35,8 +35,8 @@ def create_session(_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     )
 
 
-engine = create_engine()
-async_session = create_session(engine)
+engine = create_engine()  # connect to db
+async_session = create_session_maker(engine)  # способы управления моделями внутри питона
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

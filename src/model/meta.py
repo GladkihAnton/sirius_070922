@@ -18,8 +18,8 @@ NAMING_CONVENTION = {
 DEFAULT_SCHEMA = 'public'
 
 metadata = MetaData(naming_convention=NAMING_CONVENTION, schema=DEFAULT_SCHEMA)
-# metadata = MetaData(naming_convention=NAMING_CONVENTION, schema=DEFAULT_SCHEMA)
-# Base = declarative_base(metadata=metadata)
+
+# ORM - objecct related model : python <-> databse
 
 
 class Base(DeclarativeBase):
