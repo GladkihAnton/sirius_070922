@@ -1,43 +1,35 @@
 import asyncio
-import json
 
-import aiohttp
 import msgpack
-from aio_pika import Queue
 from aio_pika.exceptions import QueueEmpty
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InputFile, BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram import F
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aio_pika import Queue
 
 from config.settings import settings
-from ..buttons import START_GIFTING
-
-
+from src.storage.rabbit import channel_pool
 from .router import router
-from ..states.gift import GiftGroup
-from ...storage.rabbit import channel_pool
 from ...templates.env import render
 
 
-# @router.message(GiftGroup.gifting)
-# async def gifting(message: Message, state: FSMContext) -> None:
-#     await message.answer('ypa')
+# async def listen(callback_query: CallbackQuery, user_id: str):
+#     async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
+#         queue: Queue = await channel.declare_queue(settings.USER_GIFT_QUEUE_TEMPLATE.format(user_id=user_id), durable=True)
+#         message = await queue.get()
+#         parsed_message: Gift = msgpack.unpackb(message)
+#         await callback_query.answer(parsed_message)
+#
 
-
-@router.message(F.text == START_GIFTING)
-async def start_gifting(message: Message, state: FSMContext) -> None:
-    await message.answer('ypa')
-    await state.set_state(GiftGroup.gifting)
-
+@router.callback_query()
+async def next_gift(callback_query: CallbackQuery, state: FSMContext) -> None:
+    # user_data = await state.get_data()
+    # user_data_per_callback = user_data[callback_query.data]
+    await callback_query.message.delete_reply_markup()
     async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
         queue: Queue = await channel.declare_queue(
-            settings.USER_GIFT_QUEUE_TEMPLATE.format(user_id=message.from_user.id),
+            settings.USER_GIFT_QUEUE_TEMPLATE.format(user_id=callback_query.from_user.id),
             durable=True,
         )
-
-        # 'name': gift.name,
-        # 'photo': gift.photo,
-        # 'category': gift.category,
 
         retries = 3
         for _ in range(retries):
@@ -52,14 +44,12 @@ async def start_gifting(message: Message, state: FSMContext) -> None:
                 # photo = BufferedInputFile(content, 'test')
                 # # callback buttons
 
-                like_btn = InlineKeyboardButton(text='👍', callback_data='like')
-                dislike_btn = InlineKeyboardButton(text='👎', callback_data='dislike')
                 inline_btn_1 = InlineKeyboardButton(text='Следующий подарок', callback_data='next_gift')
                 markup = InlineKeyboardMarkup(
-                    inline_keyboard=[[like_btn, dislike_btn], [inline_btn_1]]
+                    inline_keyboard=[[inline_btn_1]]
                 )
 
-                await message.answer_photo(
+                await callback_query.message.answer_photo(
                     photo=parsed_gift['photo'],
                     caption=render('gift/gift.jinja2', gift=parsed_gift),
                     reply_markup=markup,
@@ -68,4 +58,4 @@ async def start_gifting(message: Message, state: FSMContext) -> None:
             except QueueEmpty:
                 await asyncio.sleep(1)
 
-        await message.answer('Нет подарков')
+        await callback_query.message.answer('Нет подарков')

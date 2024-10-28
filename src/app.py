@@ -39,6 +39,8 @@ async def lifespan(app: FastAPI) -> None:
     while background_tasks:
         await asyncio.sleep(0)
 
+    await bot.delete_webhook()
+
     logger.info('Ending lifespan')
 
 

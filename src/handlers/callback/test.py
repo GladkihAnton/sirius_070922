@@ -16,10 +16,10 @@ async def listen(callback_query: CallbackQuery, user_id: str):
         message = await queue.get()
         parsed_message: Gift = msgpack.unpackb(message)
         await callback_query.answer(parsed_message)
-
-
-@router.callback_query()
-async def callback_test(callback_query: CallbackQuery, state: FSMContext) -> None:
-    data = await state.get_data()
-    await callback_query.answer('Hello from callback!')  # as popup
-    await callback_query.message.answer('Hello from callback!')  # as message
+#
+#
+# @router.callback_query()
+# async def callback_test(callback_query: CallbackQuery, state: FSMContext) -> None:
+#     data = await state.get_data()
+#     await callback_query.answer('Hello from callback!')  # as popup
+#     await callback_query.message.answer('Hello from callback!')  # as message
