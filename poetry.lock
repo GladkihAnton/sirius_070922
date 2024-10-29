@@ -1177,6 +1177,21 @@ files = [
 ]
 
 [[package]]
+name = "msgpack-types"
+version = "0.5.0"
+description = "Type stubs for msgpack"
+optional = false
+python-versions = "<4.0,>=3.8"
+files = [
+    {file = "msgpack_types-0.5.0-py3-none-any.whl", hash = "sha256:8b633ed75e495a555fa0615843de559a74b1d176828d59bb393d266e51f6bda7"},
+    {file = "msgpack_types-0.5.0.tar.gz", hash = "sha256:aebd1b8da23f8f9966d66ebb1a43bd261b95751c6a267bd21a124d2ccac84201"},
+]
+
+[package.dependencies]
+msgpack = ">=1.1.0,<1.2.0"
+typing-extensions = ">=4.6.0"
+
+[[package]]
 name = "multidict"
 version = "6.0.5"
 description = "multidict implementation"
@@ -2099,4 +2114,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "c9a0e5973dd33d8fe9704a085b9a3172e9857da72b2364d12136811bff908a3e"
+content-hash = "946cdd8de0e66ecf77b8afa764a0936499f67f443f8c4b7a91ddcc465c8d9791"

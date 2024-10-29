@@ -1,11 +1,14 @@
 import asyncio
 import logging
+from typing import AsyncContextManager, Callable, AsyncIterator, Never, AsyncGenerator
+
 import uvicorn
 
 from aiogram import Dispatcher, Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
@@ -22,7 +25,8 @@ from src.logger import LOGGING_CONFIG, logger
 from src.storage.redis import setup_redis
 
 
-async def lifespan(app: FastAPI) -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     logging.config.dictConfig(LOGGING_CONFIG)
 
     logger.info('Starting lifespan')

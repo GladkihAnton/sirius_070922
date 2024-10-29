@@ -1,5 +1,6 @@
 import asyncio
 
+import aio_pika
 import msgpack
 from aio_pika.exceptions import QueueEmpty
 from aiogram.fsm.context import FSMContext

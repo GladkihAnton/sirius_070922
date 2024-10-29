@@ -1,7 +1,9 @@
 import asyncio
 import json
+from typing import Any
 
 import aiohttp
+import aio_pika
 import msgpack
 from aio_pika import Queue
 from aio_pika.exceptions import QueueEmpty
@@ -43,7 +45,7 @@ async def start_gifting(message: Message, state: FSMContext) -> None:
         for _ in range(retries):
             try:
                 gift = await queue.get()
-                parsed_gift = msgpack.unpackb(gift.body)
+                parsed_gift: dict[str, Any] = msgpack.unpackb(gift.body)
 
                 # async with aiohttp.ClientSession() as session:
                 #     async with session.get('https://cdn.velostrana.ru/upload/models/velo/63352/full.jpg') as response:
