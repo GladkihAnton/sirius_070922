@@ -13,6 +13,18 @@ from src.handlers.states.auth import AuthGroup
 from ..buttons import START_GIFTING
 from ...storage.rabbit import channel_pool
 
+# Note: Пример со стейтами
+# @router.message(Command('start'), AuthGroup.no_authorized)
+# async def start_cmd(message: Message, state: FSMContext) -> None:
+#     await state.set_state(AuthGroup.authorized)
+#     await message.answer("no_auth")
+#
+#
+# @router.message(Command('start'), AuthGroup.authorized)
+# async def start_cmd(message: Message, state: FSMContext) -> None:
+#     await state.set_state(AuthGroup.no_authorized)
+#     await message.answer("auth")
+
 
 @router.message(Command('start'))
 async def start_cmd(message: Message, state: FSMContext) -> None:
