@@ -53,7 +53,7 @@ def create_app() -> FastAPI:
     app = FastAPI(docs_url='/swagger', lifespan=lifespan)
     app.include_router(v1_router, prefix='/v1', tags=['v1'])
     app.include_router(tg_router, prefix='/tg', tags=['tg'])
-    app.include_router(tech_router, prefix='/tech', tags=['tech'])
+    app.include_router(tech_router, prefix='', tags=['tech'])
 
     app.add_middleware(RawContextMiddleware, plugins=[plugins.CorrelationIdPlugin()])
     return app
@@ -84,6 +84,6 @@ async def start_polling():
 
 if __name__ == '__main__':
     if settings.BOT_WEBHOOK_URL:
-        uvicorn.run('src.app:create_app', factory=True, host='0.0.0.0', port=8000, workers=1)
+        uvicorn.run('src.app:create_app', factory=True, host='0.0.0.0', port=8000, workers=2)
     else:
         asyncio.run(start_polling())

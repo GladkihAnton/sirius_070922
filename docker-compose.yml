@@ -15,16 +15,6 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
 
-  web:
-    build: .
-    command: scripts/startup.sh
-    volumes:
-      - "./:/code"
-    ports:
-      - "8000:8000"
-    env_file:
-      - config/.env
-
   rabbitmq:
     image: rabbitmq:3.13.7-management
     ports:
@@ -35,6 +25,17 @@ services:
     image: redis:6.2.4
     ports:
       - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus_config.yml"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
 
 #networks:
 #  sirius:
