@@ -1,19 +1,34 @@
 import pytest
+import requests
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent
+SEED_DIR = BASE_DIR / 'seeds'
+SEED_DIR1 = BASE_DIR / 'seeds1'
 
 
-@pytest.mark.usefixtures("test_first_fixture")
+@pytest.mark.usefixtures("_load_seeds")
 @pytest.mark.parametrize(
-    ('value', 'value1'),
+    ('seeds', 'expected_result'),
     [
-        (1, 2),
-        (3, 4),
+        (
+                [
+                    SEED_DIR / 'public.gift.json'
+                ],
+                [{"id":1,"category":"aaa","photo":"aaa","name":"aaa"},{"id":2,"category":"bbb","photo":"bbb","name":"bbb"}]
+        ),
+        (
+            [
+                SEED_DIR1 / 'public.gift.json'
+            ],
+            [{"id":1,"category":"ccc","photo":"ccc","name":"ccc"},{"id":2,"category":"bbb","photo":"bbb","name":"bbb"}]
+        )
     ]
 )
-def test_first_with_group(
-    a: int,
-    b: int,
-    value: int,
-    value1: int,
-) -> None:
-    assert value == value1
-    assert a == b
+@pytest.mark.asyncio()
+async def test_first_with_group(expected_result, http_client, _load_seeds) -> None:
+    response = await http_client.get('/health')
+    assert response.status_code == 200
+    assert response.json() == expected_result
+    a = 1
+

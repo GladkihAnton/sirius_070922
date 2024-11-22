@@ -1,45 +1,32 @@
+import asyncio
+
+import aiohttp
+import httpx
 import pytest
+import pytest_asyncio
+from fastapi import FastAPI
+from starlette.testclient import TestClient
 
-from tests.types import FixtureFunctionT
+from scripts.migrate import migrate
+from src.app import create_app
 
 
-@pytest.fixture(scope='session', autouse=True)
-def _init_db() -> FixtureFunctionT:
-    print('start db')
+
+@pytest_asyncio.fixture(scope='session', autouse=True)
+async def _init_db() -> aiohttp.ClientSession:
+    await migrate()
     yield
-    print('drop db')
+    # TODO drop db
 
 
-@pytest.fixture()
-def _void() -> FixtureFunctionT:
-    print('hello void')
-    yield
-    print('hello after void')
+@pytest.fixture(scope='session')
+def app() -> FastAPI:
+    return create_app()
 
 
-@pytest.fixture()
-def _void1() -> FixtureFunctionT:
-    print('hello void1')
-    return
 
+@pytest_asyncio.fixture(scope='session')
+async def http_client(app: FastAPI) -> httpx.AsyncClient:
+    async with httpx.AsyncClient(app=app, base_url='http://localhost') as client:
+        yield client
 
-@pytest.fixture()
-def _void_group1(_void1, _void) -> FixtureFunctionT:
-    print('void_group1')
-    return
-
-
-@pytest.fixture()
-def a() -> int:
-    yield 1
-
-
-@pytest.fixture()
-def b() -> int:
-    return 2
-
-
-NAMESPACE = {
-    'a': 1,
-    'b': 2
-}

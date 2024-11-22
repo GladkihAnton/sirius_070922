@@ -1,30 +1,24 @@
-import asyncio
-import random
-import time
-from asyncio import Task
-from typing import Any
-
-from aiogram.methods.base import TelegramType, TelegramMethod
-from aiogram.types import Update
+from fastapi import Depends
 from fastapi.responses import ORJSONResponse
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import Response
 
 from src.api.tech.router import router
-from src.bg_tasks import background_tasks
-from src.bot import get_dp, get_bot
-from src.metrics import TOTAL_REQ, LATENCY
+from src.model.gift import Gift
+from src.storage.db import get_db
 
 
 @router.get("/health")
-async def health(
-    request: Request,
-) -> Response:
-    start = time.monotonic()
-    sleep_time = random.randint(0, 20) / 10
-    await asyncio.sleep(sleep_time)
-
-    end = time.monotonic()
-    LATENCY.labels("health").observe(end - start)
-    return Response()
+async def health(session: AsyncSession = Depends(get_db)) -> Response:
+    gifts = (await session.scalars(select(Gift))).all()
+    return ORJSONResponse(
+        [
+            {
+                'id': gift.id,
+                'category': gift.category,
+                'photo': gift.photo,
+                'name': gift.name,
+            } for gift in gifts
+        ]
+    )

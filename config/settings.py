@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
 
-    RABBIT_HOST: str = 'localhost' # rabbitmq
+    RABBIT_HOST: str = 'localhost'  # rabbitmq
     RABBIT_PORT: int = 5672
     RABBIT_USER: str = 'guest'
     RABBIT_PASSWORD: str = 'guest'

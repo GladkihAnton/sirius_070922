@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     dp.include_router(callback_router)
 
     wh_info = await bot.get_webhook_info()
-    if wh_info.url != settings.WEBHOOK_URL:
+    if wh_info.url != settings.BOT_WEBHOOK_URL:
         await bot.set_webhook(settings.BOT_WEBHOOK_URL)
 
     logger.info('Finished start')
