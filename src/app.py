@@ -30,15 +30,20 @@ from src.storage.redis import setup_redis
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logging.config.dictConfig(LOGGING_CONFIG)
 
-    logger.info('Starting lifespan')
-
     dp = Dispatcher()
     setup_dp(dp)
-    bot = Bot(token=settings.BOT_TOKEN)
+    default = DefaultBotProperties(parse_mode=ParseMode.HTML)
+    bot = Bot(token=settings.BOT_TOKEN, default=default)
     setup_bot(bot)
 
-    temp = await bot.get_webhook_info()
-    await bot.set_webhook(settings.BOT_WEBHOOK_URL)
+    dp.include_router(command_router)
+    dp.include_router(message_router)
+    dp.include_router(callback_router)
+
+    wh_info = await bot.get_webhook_info()
+    if wh_info.url != settings.WEBHOOK_URL:
+        await bot.set_webhook(settings.BOT_WEBHOOK_URL)
+
     logger.info('Finished start')
     yield
     while background_tasks:
