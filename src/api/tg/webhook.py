@@ -10,21 +10,16 @@ from starlette.responses import JSONResponse
 
 from src.api.tg.router import router
 from src.bg_tasks import background_tasks
-from src.bot import get_dp, get_bot
+from src import bot
 
 
-@router.post("/home")
-async def home_post(
-    request: Request,
-    # session: AsyncSession = Depends(get_db),
-) -> JSONResponse:
-    a = 1
-    data = await request.json()
-    update = Update(**data)
-    dp = get_dp()
+@router.post("/webhook")
+async def webhook(request: Request) -> JSONResponse:
+    update = await request.json()
+    # update = Update(**data)
 
-    task: Task[TelegramMethod[Any] | None] = asyncio.create_task(dp.feed_webhook_update(get_bot(), update))
+    task: Task[TelegramMethod[Any] | None] = asyncio.create_task(bot.dp.feed_webhook_update(bot.bot, update))
     background_tasks.add(task)
     task.add_done_callback(background_tasks.discard)
 
-    return ORJSONResponse({"message": "Hello"})
+    return ORJSONResponse({"status": "ok"})

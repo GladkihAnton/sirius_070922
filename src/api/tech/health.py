@@ -18,7 +18,6 @@ from starlette_context.header_keys import HeaderKeys
 
 from src.api.tech.router import router
 from src.bg_tasks import background_tasks
-from src.bot import get_dp, get_bot
 from src.logger import logger
 from src.metrics import TOTAL_REQ, LATENCY, TOTAL_SEND_MESSAGES
 from src.storage.rabbit import channel_pool

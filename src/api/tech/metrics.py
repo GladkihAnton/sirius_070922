@@ -11,7 +11,6 @@ from starlette.responses import JSONResponse, Response
 
 from src.api.tech.router import router
 from src.bg_tasks import background_tasks
-from src.bot import get_dp, get_bot
 
 
 @router.get("/metrics")

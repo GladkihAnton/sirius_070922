@@ -18,31 +18,25 @@ from src.api.v1.router import router as v1_router
 from src.api.tg.router import router as tg_router
 from src.api.tech.router import router as tech_router
 from src.bg_tasks import background_tasks
-from src.bot import setup_bot, setup_dp
+from src.bot import dp, bot
 from src.handlers.callback.router import router as callback_router
 from src.handlers.command.router import router as command_router
 from src.handlers.message.router import router as message_router
 from src.logger import LOGGING_CONFIG, logger
-from src.storage.redis import setup_redis
+from src.storage import redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logging.config.dictConfig(LOGGING_CONFIG)
 
-    dp = Dispatcher()
-    setup_dp(dp)
-    default = DefaultBotProperties(parse_mode=ParseMode.HTML)
-    bot = Bot(token=settings.BOT_TOKEN, default=default)
-    setup_bot(bot)
-
     dp.include_router(command_router)
     dp.include_router(message_router)
     dp.include_router(callback_router)
 
-    wh_info = await bot.get_webhook_info()
-    if wh_info.url != settings.BOT_WEBHOOK_URL:
-        await bot.set_webhook(settings.BOT_WEBHOOK_URL)
+    # wh_info = await bot.get_webhook_info()
+    # if wh_info.url != settings.BOT_WEBHOOK_URL:
+    #     await bot.set_webhook(settings.BOT_WEBHOOK_URL)
 
     logger.info('Finished start')
     yield
@@ -68,15 +62,6 @@ async def start_polling():
     logging.config.dictConfig(LOGGING_CONFIG)
 
     logger.info('Starting polling')
-    redis = setup_redis()
-    storage = RedisStorage(redis=redis)
-
-    dp = Dispatcher(storage=storage)
-
-    setup_dp(dp)
-    default = DefaultBotProperties(parse_mode=ParseMode.HTML)
-    bot = Bot(token=settings.BOT_TOKEN, default=default)
-    setup_bot(bot)
 
     dp.include_router(command_router)
     dp.include_router(message_router)

@@ -30,5 +30,4 @@ async def test_first_with_group(expected_result, http_client, _load_seeds) -> No
     response = await http_client.get('/health')
     assert response.status_code == 200
     assert response.json() == expected_result
-    a = 1
 

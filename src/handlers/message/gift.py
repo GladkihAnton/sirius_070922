@@ -28,7 +28,6 @@ from ...templates.env import render
 
 @router.message(F.text == START_GIFTING)
 async def start_gifting(message: Message, state: FSMContext) -> None:
-    await message.answer('ypa')
     await state.set_state(GiftGroup.gifting)
 
     async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
@@ -36,10 +35,6 @@ async def start_gifting(message: Message, state: FSMContext) -> None:
             settings.USER_GIFT_QUEUE_TEMPLATE.format(user_id=message.from_user.id),
             durable=True,
         )
-
-        # 'name': gift.name,
-        # 'photo': gift.photo,
-        # 'category': gift.category,
 
         retries = 3
         for _ in range(retries):
