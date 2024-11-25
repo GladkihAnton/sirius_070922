@@ -16,9 +16,9 @@ from ..buttons import START_GIFTING
 
 
 from .router import router
-from ..states.gift import GiftGroup
-from ...storage.rabbit import channel_pool
-from ...templates.env import render
+from src.handlers.states.gift import GiftGroup
+from src.storage import rabbit
+from src.templates.env import render
 
 
 # @router.message(GiftGroup.gifting)
@@ -28,9 +28,9 @@ from ...templates.env import render
 
 @router.message(F.text == START_GIFTING)
 async def start_gifting(message: Message, state: FSMContext) -> None:
-    await state.set_state(GiftGroup.gifting)
+    # await state.set_state(GiftGroup.gifting)
 
-    async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
+    async with rabbit.channel_pool.acquire() as channel:  # type: aio_pika.Channel
         queue: Queue = await channel.declare_queue(
             settings.USER_GIFT_QUEUE_TEMPLATE.format(user_id=message.from_user.id),
             durable=True,

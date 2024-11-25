@@ -1,7 +1,9 @@
+from collections import deque
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Any
 from unittest.mock import MagicMock, AsyncMock
 
+import msgpack
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
@@ -9,8 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from scripts.load_fixture import load_fixture
 from src import bot
-from src.storage import redis
+from src.storage import redis, rabbit
 from src.storage.db import engine, get_db
+from tests.mocking.rabbit import MockQueue, MockChannelPool, MockChannel
 from tests.mocking.redis import MockRedis
 
 
@@ -45,3 +48,14 @@ async def mock_bot_dp(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
     mock = AsyncMock()
     monkeypatch.setattr(bot, 'dp', mock) # bot.dp -> mock
     return mock
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any):
+
+    queue = MockQueue(deque())
+    await queue.put(msgpack.packb(predefined_queue))
+
+    channel = MockChannel(queue=queue)
+    pool = MockChannelPool(channel=channel)
+    monkeypatch.setattr(rabbit, 'channel_pool', pool)

@@ -1,14 +1,12 @@
 from datetime import datetime
-from unittest.mock import AsyncMock, call
+from unittest.mock import AsyncMock
 
 import pytest
-import requests
 from pathlib import Path
 
 from aiogram.types import Update, Message, User, Chat
 
 from src import bot
-from src.bot import dp
 
 BASE_DIR = Path(__file__).parent
 SEED_DIR = BASE_DIR / 'seeds'
@@ -33,7 +31,7 @@ async def test_webhook(expected_result, http_client, mock_bot_dp: AsyncMock) -> 
     message = Message(message_id=1, date=datetime.now(), chat=chat, from_user=user)
     update = Update(update_id=1, message=message).model_dump(mode='json')
 
-    response = await http_client.post('/tg/webhook', json=update)
+    await http_client.post('/tg/webhook', json=update)
     mock_bot_dp.assert_has_calls([
         ('feed_webhook_update', (bot.bot, update))
     ])
