@@ -15,6 +15,14 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
 
+  bot:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: uvicorn src.app:create_app --factory --port 8001 --workers=1
+    ports:
+      - "8001:8001"
+
   rabbitmq:
     image: rabbitmq:3.13.7-management
     ports:

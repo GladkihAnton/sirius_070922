@@ -1,42 +1,30 @@
 import asyncio
 import logging
-from typing import AsyncContextManager, Callable, AsyncIterator, Never, AsyncGenerator
+from typing import AsyncGenerator
 
 import uvicorn
 
-from aiogram import Dispatcher, Bot
-from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
-from aiogram.fsm.storage.redis import RedisStorage
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
 
 from config.settings import settings
-from src.api.v1.router import router as v1_router
 from src.api.tg.router import router as tg_router
 from src.api.tech.router import router as tech_router
 from src.bg_tasks import background_tasks
 from src.bot import dp, bot
-from src.handlers.callback.router import router as callback_router
-from src.handlers.command.router import router as command_router
-from src.handlers.message.router import router as message_router
+
 from src.logger import LOGGING_CONFIG, logger
-from src.storage import redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logging.config.dictConfig(LOGGING_CONFIG)
 
-    dp.include_router(command_router)
-    dp.include_router(message_router)
-    dp.include_router(callback_router)
-
-    # wh_info = await bot.get_webhook_info()
-    # if wh_info.url != settings.BOT_WEBHOOK_URL:
-    #     await bot.set_webhook(settings.BOT_WEBHOOK_URL)
+    wh_info = await bot.get_webhook_info()
+    if wh_info.url != settings.BOT_WEBHOOK_URL:
+        await bot.set_webhook(settings.BOT_WEBHOOK_URL)
 
     logger.info('Finished start')
     yield
@@ -50,7 +38,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 def create_app() -> FastAPI:
     app = FastAPI(docs_url='/swagger', lifespan=lifespan)
-    app.include_router(v1_router, prefix='/v1', tags=['v1'])
     app.include_router(tg_router, prefix='/tg', tags=['tg'])
     app.include_router(tech_router, prefix='', tags=['tech'])
 
@@ -63,9 +50,6 @@ async def start_polling():
 
     logger.info('Starting polling')
 
-    dp.include_router(command_router)
-    dp.include_router(message_router)
-    dp.include_router(callback_router)
     await bot.delete_webhook()
 
     logging.error('Dependencies launched')
