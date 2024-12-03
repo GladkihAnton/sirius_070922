@@ -80,6 +80,7 @@ env = [
     "DB_URL=....",
     "DB_URL=....",
 ]
+python_functions="test_start_gifting"
 
 [tool.isort]
 line_length = 120

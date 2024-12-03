@@ -1,12 +1,24 @@
-import jwt
+import asyncio
+from unittest.mock import AsyncMock
 
-encoded = jwt.encode(
-    {
-        "user_id": 123
-     },
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-)
-jwt.decode(
-    encoded,
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-)
+import msgpack
+
+
+class Message(AsyncMock):
+    def __init__(self, body, **kwargs):
+        super().__init__(**kwargs)
+        self.body = msgpack.packb(body)
+
+
+    def return_body(self):
+        return self.body
+
+async def main():
+    mock_message = Message(body={'test': 'test'})
+    print(msgpack.unpackb(mock_message.return_body()))
+    await mock_message.answer(test=1)
+    x = 1
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

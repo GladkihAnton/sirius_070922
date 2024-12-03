@@ -1,6 +1,9 @@
 from collections import deque
 from dataclasses import dataclass
 
+from aio_pika.exceptions import QueueEmpty
+
+
 @dataclass
 class MockChannelPool:  # -> Channel
     channel: 'MockChannel'
@@ -20,8 +23,8 @@ class MockChannel:
         yield
         return self
 
-    def __aexit__(self) -> None:
-        return
+    def __aexit__(self, exc_type, exc_val, exc_tb):
+        return self
 
 
     async def declare_queue(self, *args, **kwargs) -> 'MockQueue':
@@ -33,7 +36,10 @@ class MockQueue:
     queue: deque['MockMessage']
 
     async def get(self, *args, **kwargs) -> 'MockMessage':
-        return self.queue.popleft()
+        try:
+            return self.queue.popleft()
+        except IndexError:
+            raise QueueEmpty
 
 
     async def put(self, value: bytes) -> None:

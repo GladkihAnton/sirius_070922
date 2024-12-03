@@ -54,7 +54,9 @@ async def mock_bot_dp(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
 async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any):
 
     queue = MockQueue(deque())
-    await queue.put(msgpack.packb(predefined_queue))
+
+    if predefined_queue is not None:
+        await queue.put(msgpack.packb(predefined_queue))
 
     channel = MockChannel(queue=queue)
     pool = MockChannelPool(channel=channel)
