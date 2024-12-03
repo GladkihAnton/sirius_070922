@@ -1,5 +1,10 @@
+import asyncio
+import contextlib
+import uuid
 from collections import deque
 from dataclasses import dataclass
+from typing import Iterator
+from unittest.mock import AsyncMock
 
 from aio_pika.exceptions import QueueEmpty
 
@@ -15,6 +20,7 @@ class MockChannelPool:  # -> Channel
 @dataclass
 class MockChannel:
     queue: 'MockQueue'
+    exchange: 'MockExchange'
 
     def __aenter__(self) -> 'MockChannel':
         return self
@@ -26,9 +32,35 @@ class MockChannel:
     def __aexit__(self, exc_type, exc_val, exc_tb):
         return self
 
+    async def set_qos(self, *args, **kwargs) -> None:
+        return
 
     async def declare_queue(self, *args, **kwargs) -> 'MockQueue':
         return self.queue
+
+    async def declare_exchange(self, *args, **kwargs) -> 'MockQueue':
+        return self.exchange
+
+
+class MockQueueIterator:
+    def __init__(self, queue: deque['MockMessage']):
+        self.queue: Iterator['MockMessage'] = iter(queue)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self) -> 'MockMessage':
+        return next(self.queue)
+
+    def __aenter__(self) -> 'MockQueueIterator':
+        return self
+
+    def __await__(self) -> 'MockQueueIterator':
+        yield
+        return self
+
+    def __aexit__(self, exc_type, exc_val, exc_tb) -> 'MockQueueIterator':
+        return self
 
 
 @dataclass
@@ -41,11 +73,36 @@ class MockQueue:
         except IndexError:
             raise QueueEmpty
 
+    def iterator(self) -> MockQueueIterator:
+        return MockQueueIterator(queue=self.queue)
 
     async def put(self, value: bytes) -> None:
         self.queue.append(MockMessage(body=value))
 
 
+class MockMessageProcess:
+    def __aenter__(self) -> 'MockQueueIterator':
+        return self
+
+    def __await__(self) -> 'MockQueueIterator':
+        yield
+        return self
+
+    def __aexit__(self, exc_type, exc_val, exc_tb) -> 'MockQueueIterator':
+        return self
+
+
 @dataclass
 class MockMessage:
     body: bytes
+
+    def process(self) -> MockMessageProcess:
+        return MockMessageProcess()
+
+    @property
+    def correlation_id(self) -> MockMessageProcess:
+        return str(uuid.uuid4())
+
+
+class MockExchange(AsyncMock):
+    ...

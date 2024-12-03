@@ -50,4 +50,3 @@ async def test_start_gifting(predefined_queue) -> None:
         message.assert_has_calls([
             ('answer', ('Нет подарков',))
         ])
-    a = 1

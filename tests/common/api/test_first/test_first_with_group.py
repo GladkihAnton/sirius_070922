@@ -26,7 +26,7 @@ SEED_DIR1 = BASE_DIR / 'seeds1'
     ]
 )
 @pytest.mark.asyncio()
-async def test_first_with_group(expected_result, http_client, _load_seeds) -> None:
+async def test_first_with_group(expected_result, http_client) -> None:
     response = await http_client.get('/health')
     assert response.status_code == 200
     assert response.json() == expected_result

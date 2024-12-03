@@ -11,9 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from scripts.load_fixture import load_fixture
 from src import bot
-from src.storage import redis, rabbit
+from src.storage import redis, rabbit, db
+from consumer.storage import rabbit as consumer_rabbit, db as consumer_db
 from src.storage.db import engine, get_db
-from tests.mocking.rabbit import MockQueue, MockChannelPool, MockChannel
+from tests.mocking.rabbit import MockQueue, MockChannelPool, MockChannel, MockExchange
 from tests.mocking.redis import MockRedis
 
 
@@ -38,26 +39,49 @@ async def _load_seeds(db_session: AsyncSession, seeds: list[Path]) -> None:
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def _mock_redis(monkeypatch: pytest.MonkeyPatch) -> None:
+async def db_session(app: FastAPI, monkeypatch: pytest.MonkeyPatch) -> AsyncSession:
+    async with engine.begin() as conn:  # start transaction
+        session_maker = async_sessionmaker(bind=conn, class_=AsyncSession)  # create sessio_maker through transcation
+
+        async with session_maker() as session:
+            async def overrided_db_session() -> AsyncGenerator[AsyncSession, None]:
+                yield session
+
+            monkeypatch.setattr(consumer_db, 'async_session', session_maker)
+            monkeypatch.setattr(db, 'async_session', session_maker)
+            app.dependency_overrides[get_db] = overrided_db_session
+
+            yield session
+        await conn.rollback()
+
+
+@pytest.fixture(autouse=True)
+def _mock_redis(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(redis, 'redis_storage', MockRedis())
     yield
 
 
-@pytest_asyncio.fixture(autouse=True)
-async def mock_bot_dp(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
+@pytest.fixture(autouse=True)
+def mock_bot_dp(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
     mock = AsyncMock()
     monkeypatch.setattr(bot, 'dp', mock) # bot.dp -> mock
     return mock
 
 
-@pytest_asyncio.fixture(autouse=True)
-async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any):
+@pytest.fixture()
+def mock_exchange() -> MockExchange:
+    return MockExchange()
+
+
+@pytest_asyncio.fixture()
+async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any, mock_exchange: MockExchange):
 
     queue = MockQueue(deque())
 
     if predefined_queue is not None:
         await queue.put(msgpack.packb(predefined_queue))
 
-    channel = MockChannel(queue=queue)
+    channel = MockChannel(queue=queue, exchange=mock_exchange)
     pool = MockChannelPool(channel=channel)
     monkeypatch.setattr(rabbit, 'channel_pool', pool)
+    monkeypatch.setattr(consumer_rabbit, 'channel_pool', pool)

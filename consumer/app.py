@@ -7,7 +7,7 @@ from consumer.handlers.gift import handle_event_gift
 from consumer.logger import LOGGING_CONFIG, logger, correlation_id_ctx
 from consumer.metrics import TOTAL_RECEIVED_MESSAGES
 from consumer.schema.gift import GiftMessage
-from consumer.storage.rabbit import channel_pool
+from consumer.storage import rabbit
 
 
 async def start_consumer() -> None:
@@ -15,10 +15,10 @@ async def start_consumer() -> None:
     logger.info('Starting consumer...')
 
     queue_name = "test_queue"
-    async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
+    async with rabbit.channel_pool.acquire() as channel:  # type: aio_pika.Channel
 
         # Will take no more than 10 messages in advance
-        await channel.set_qos(prefetch_count=10)
+        await channel.set_qos(prefetch_count=10) # TODO почитать
 
         # Declaring queue
         queue = await channel.declare_queue(queue_name, durable=True)

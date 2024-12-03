@@ -9,20 +9,19 @@ from config.settings import settings
 from consumer.logger import correlation_id_ctx
 from consumer.model.gift import Gift
 from consumer.schema.gift import GiftMessage
-from consumer.storage.db import async_session
-from consumer.storage.rabbit import channel_pool
+from consumer.storage import rabbit, db
 
 
 async def handle_event_gift(message: GiftMessage):
     if message['action'] == 'get_gifts':
-        async with async_session() as db:
+        async with db.async_session() as db_session:
             # gifts = (await db.scalars(select(Gift).order_by(func.random()))).all()
 
-            not_fetched = await db.execute(select(Gift).order_by(func.random()))
+            not_fetched = await db_session.execute(select(Gift).order_by(func.random()))
             tuple_rows = not_fetched.all()
             gifts = [row for row, in tuple_rows]
 
-            async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
+            async with rabbit.channel_pool.acquire() as channel:  # type: aio_pika.Channel
                 exchange = await channel.declare_exchange("user_gifts", ExchangeType.TOPIC, durable=True)
 
                 for gift in gifts:

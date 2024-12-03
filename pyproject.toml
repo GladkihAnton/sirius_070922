@@ -73,14 +73,8 @@ extend-exclude = '''
 )
 '''
 
-[tool.pytest.ini]
-env = [
-    "DB_URL=....",
-    "DB_URL=....",
-    "DB_URL=....",
-    "DB_URL=....",
-]
-python_functions="test_start_gifting"
+[tool.pytest.ini_options]
+python_functions = "test_handle_gift"
 
 [tool.isort]
 line_length = 120
