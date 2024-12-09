@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logging.config.dictConfig(LOGGING_CONFIG)
 
     polling_task: asyncio.Task[None] | None = None
+
     wh_info = await bot.get_webhook_info()
     if settings.BOT_WEBHOOK_URL and wh_info.url != settings.BOT_WEBHOOK_URL:
         await bot.set_webhook(settings.BOT_WEBHOOK_URL)

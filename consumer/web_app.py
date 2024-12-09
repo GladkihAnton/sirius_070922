@@ -22,7 +22,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     logger.info('Started succesfully')
     yield
-    task.cancel()
+
+    if task is not None:
+        logger.info("Stopping polling...")
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            logger.info("Polling stopped")
+
     logger.info('Ending lifespan')
 
 
