@@ -29,9 +29,7 @@ SEED_DIR1 = BASE_DIR / 'seeds1'
 @pytest.mark.asyncio()
 @pytest.mark.usefixtures('_load_queue')
 async def test_start_gifting(predefined_queue) -> None:
-    chat = Chat(id=1, type='private')
     user = User(id=1, is_bot=False, is_premium=False, last_name='test', first_name='test')
-    # message = MockTgMessage(message_id=1, date=datetime.now(), chat=chat, from_user=user)
     message = MockTgMessage(from_user=user)
 
     await start_gifting(message, state=1)
