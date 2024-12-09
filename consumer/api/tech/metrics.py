@@ -10,4 +10,3 @@ async def metrics(
     request: Request,
 ) -> Response:
     return Response(generate_latest(), headers={'Content-Type': CONTENT_TYPE_LATEST})
-

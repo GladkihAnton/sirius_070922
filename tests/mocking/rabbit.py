@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Iterator
 from unittest.mock import AsyncMock
 
+import aio_pika
 from aio_pika.exceptions import QueueEmpty
 
 
@@ -76,8 +77,8 @@ class MockQueue:
     def iterator(self) -> MockQueueIterator:
         return MockQueueIterator(queue=self.queue)
 
-    async def put(self, value: bytes) -> None:
-        self.queue.append(MockMessage(body=value))
+    async def put(self, value: bytes, correlation_id) -> None:
+        self.queue.append(MockMessage(body=value, correlation_id=correlation_id))
 
 
 class MockMessageProcess:
@@ -95,14 +96,17 @@ class MockMessageProcess:
 @dataclass
 class MockMessage:
     body: bytes
+    correlation_id: str
 
     def process(self) -> MockMessageProcess:
         return MockMessageProcess()
 
-    @property
-    def correlation_id(self) -> MockMessageProcess:
-        return str(uuid.uuid4())
-
 
 class MockExchange(AsyncMock):
     ...
+
+
+
+class MockExchangeMessage(aio_pika.Message):
+    def __eq__(self, other):
+        return self.body == other.body

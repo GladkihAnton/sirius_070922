@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import AsyncGenerator, Any
 from unittest.mock import MagicMock, AsyncMock
 
+import aio_pika
 import msgpack
 import pytest
 import pytest_asyncio
@@ -14,7 +15,7 @@ from src import bot
 from src.storage import redis, rabbit, db
 from consumer.storage import rabbit as consumer_rabbit, db as consumer_db
 from src.storage.db import engine, get_db
-from tests.mocking.rabbit import MockQueue, MockChannelPool, MockChannel, MockExchange
+from tests.mocking.rabbit import MockQueue, MockChannelPool, MockChannel, MockExchange, MockExchangeMessage
 from tests.mocking.redis import MockRedis
 
 
@@ -74,14 +75,15 @@ def mock_exchange() -> MockExchange:
 
 
 @pytest_asyncio.fixture()
-async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any, mock_exchange: MockExchange):
+async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any, correlation_id, mock_exchange: MockExchange):
 
     queue = MockQueue(deque())
 
     if predefined_queue is not None:
-        await queue.put(msgpack.packb(predefined_queue))
+        await queue.put(msgpack.packb(predefined_queue), correlation_id)
 
     channel = MockChannel(queue=queue, exchange=mock_exchange)
     pool = MockChannelPool(channel=channel)
     monkeypatch.setattr(rabbit, 'channel_pool', pool)
     monkeypatch.setattr(consumer_rabbit, 'channel_pool', pool)
+    monkeypatch.setattr(aio_pika, 'Message', MockExchangeMessage)
